@@ -1,0 +1,16 @@
+.DS_Store
+.idea
+.idea/*
+.bash_history
+.bash_logout
+.bashrc
+.cache/
+.profile
+.ssh/
+ssls/
+.env
+tmp
+
+public/.well-known/
+/storage
+
