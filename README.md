@@ -6,6 +6,7 @@
 [How to Run](#how-to-run) ·
 [How to Add New Articles](#how-to-add-new-articles) ·
 [Important Rules](#important-rules) ·
+[Code and Documentation](#code-and-documentation) ·
 [Why `block.php` Exists](#why-blockphp-exists) ·
 [Troubleshooting](#troubleshooting) ·
 [Project Idea](#project-idea) ·
@@ -19,7 +20,9 @@ The project consists of:
 
 - `public/index.php` — the main page and automatic menu generation from folders
 - `public/block.php` — secure delivery of HTML blocks
-- `public/assets/js/app.js` — loads blocks on click
+- `public/assets/js/app.js` — start init point app
+- `public/assets/js/core/App.js` — Core App script
+- `public/assets/js/modules` — Modules for application, for example document loader, search function
 - `public/assets/css/app.css` — styles
 - `storage/blocks/` — the actual documentation files stored as separate `.html` files
 
@@ -33,6 +36,11 @@ docs/
     assets/
       js/
         app.js
+        core/
+          App.js
+        modules/
+          DocLoader.js
+          Search.js
       css/
         app.css
   storage/
@@ -76,6 +84,22 @@ After refreshing the page, the new file will automatically appear in the menu.
 - Only `.html` files are allowed
 - The menu structure is generated automatically from folders
 - If a file does not appear, check its extension and path
+- If project code changes, update this README and `README_ru.md` when the behavior, structure, or run instructions change
+
+## Code and Documentation
+
+When changing the project code, keep the documentation in sync.
+
+Update the README files if you change:
+
+- project structure
+- run commands
+- JavaScript module names or responsibilities
+- PHP page loading or block delivery logic
+- rules for adding documentation blocks
+- search behavior
+
+This keeps the project understandable after future refactoring.
 
 ## Why `block.php` Exists
 
