@@ -22,7 +22,7 @@ The project consists of:
 - `public/block.php` — secure delivery of HTML blocks
 - `public/assets/js/app.js` — start init point app
 - `public/assets/js/core/App.js` — Core App script
-- `public/assets/js/modules` — Modules for application, for example document loader, search function
+- `public/assets/js/modules` — modules for document loading, search, and the current document table of contents
 - `public/assets/css/app.css` — styles
 - `storage/blocks/` — the actual documentation files stored as separate `.html` files
 
@@ -41,6 +41,7 @@ docs/
         modules/
           DocLoader.js
           Search.js
+          TableOfContents.js
       css/
         app.css
   storage/
@@ -98,6 +99,7 @@ Update the README files if you change:
 - PHP page loading or block delivery logic
 - rules for adding documentation blocks
 - search behavior
+- table of contents behavior
 
 This keeps the project understandable after future refactoring.
 
@@ -143,6 +145,7 @@ This is not a full website, but a local knowledge base for:
 
 - collapsible menu groups
 - search not only by menu items, but also by content
+- sticky table of contents for the current document
 - tags
 - favorites
 - markdown instead of html

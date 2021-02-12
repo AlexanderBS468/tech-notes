@@ -81,7 +81,7 @@ function renderMenu(array $items): string
 		$path = htmlspecialchars($item['path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
 		$html .= '<li class="doc-menu-item">';
-		$html .= '<a href="#" class="js-doc-link" data-path="' . $path . '">' . $title . '</a>';
+		$html .= '<a href="javascript:void()" class="js-doc-link" data-path="' . $path . '">' . $title . '</a>';
 		$html .= '</li>';
 	}
 
@@ -158,6 +158,15 @@ $searchIndex = $baseDir ? buildSearchIndex($tree, $baseDir) : [];
 			Локальная база знаний. Дальше можно разрастить в полноценную документацию по Laravel / PHP / Symfony / Bitrix.
 		</div>
 	</main>
+
+	<aside class="toc-sidebar">
+		<div class="toc">
+			<div class="toc__title">Содержание</div>
+			<div id="table-of-contents" class="toc__body">
+				<div class="toc__empty">Выбери документ</div>
+			</div>
+		</div>
+	</aside>
 </div>
 
 <script>
