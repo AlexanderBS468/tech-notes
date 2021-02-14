@@ -4,6 +4,8 @@ export class TableOfContents {
 		this.tocElement = tocElement;
 		this.headingSelector = 'h2, h3, h4';
 		this.observer = null;
+		this.syncFrame = null;
+		this.syncSource = null;
 	}
 
 	init() {
@@ -29,6 +31,14 @@ export class TableOfContents {
 				behavior: 'smooth',
 				block: 'start',
 			});
+		});
+
+		this.tocElement.addEventListener('scroll', () => {
+			this.syncFromToc();
+		});
+
+		window.addEventListener('scroll', () => {
+			this.syncFromPage();
 		});
 	}
 
@@ -62,6 +72,7 @@ export class TableOfContents {
 			</button>
 		`).join('');
 
+		this.tocElement.scrollTop = 0;
 		this.observeHeadings(headings);
 	}
 
@@ -128,7 +139,8 @@ export class TableOfContents {
 		}
 
 		this.tocElement.querySelectorAll('.toc__link').forEach(link => {
-			link.classList.toggle('active', link.dataset.targetId === id);
+			const isActive = link.dataset.targetId === id;
+			link.classList.toggle('active', isActive);
 		});
 	}
 
@@ -137,6 +149,74 @@ export class TableOfContents {
 			this.observer.disconnect();
 			this.observer = null;
 		}
+	}
+
+	syncFromToc() {
+		if (this.syncSource === 'page') {
+			return;
+		}
+
+		this.scheduleSync('toc', () => {
+			const pageScrollable = this.getPageScrollable();
+			const tocScrollable = this.getTocScrollable();
+
+			if (pageScrollable <= 0 || tocScrollable <= 0) {
+				return;
+			}
+
+			const progress = this.tocElement.scrollTop / tocScrollable;
+			this.syncSource = 'toc';
+			window.scrollTo({
+				top: progress * pageScrollable,
+				behavior: 'auto',
+			});
+			this.releaseSyncSource();
+		});
+	}
+
+	syncFromPage() {
+		if (this.syncSource === 'toc') {
+			return;
+		}
+
+		this.scheduleSync('page', () => {
+			const pageScrollable = this.getPageScrollable();
+			const tocScrollable = this.getTocScrollable();
+
+			if (pageScrollable <= 0 || tocScrollable <= 0) {
+				return;
+			}
+
+			const progress = window.scrollY / pageScrollable;
+			this.syncSource = 'page';
+			this.tocElement.scrollTop = progress * tocScrollable;
+			this.releaseSyncSource();
+		});
+	}
+
+	scheduleSync(source, callback) {
+		if (this.syncFrame) {
+			cancelAnimationFrame(this.syncFrame);
+		}
+
+		this.syncFrame = requestAnimationFrame(() => {
+			this.syncFrame = null;
+			callback();
+		});
+	}
+
+	releaseSyncSource() {
+		requestAnimationFrame(() => {
+			this.syncSource = null;
+		});
+	}
+
+	getPageScrollable() {
+		return Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+	}
+
+	getTocScrollable() {
+		return Math.max(this.tocElement.scrollHeight - this.tocElement.clientHeight, 0);
 	}
 
 	escape(value) {

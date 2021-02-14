@@ -93,6 +93,9 @@ body {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
+	max-height: calc(100vh - 66px);
+	overflow: auto;
+	padding-bottom: 12px;
 }
 
 .toc__link {
@@ -109,7 +112,7 @@ body {
 	text-align: left;
 	cursor: pointer;
 	overflow-wrap: anywhere;
-	overflow: hidden;
+	overflow: visible;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
 }
@@ -280,11 +283,12 @@ main {
 }
 
 section.card {
-	background: rgba(23, 32, 51, 0.96);
+	/*background: rgba(23, 32, 51, 0.96);*/
 	border: 1px solid var(--border);
 	border-radius: 24px;
 	padding: 28px;
 	box-shadow: var(--shadow);
+	margin-bottom: 24px;
 }
 
 section.card.hidden {
@@ -354,6 +358,8 @@ pre {
 	overflow: auto;
 	font-size: 14px;
 	line-height: 1.75;
+	width: 100%;
+	text-wrap: auto;
 }
 
 pre code {
