@@ -124,6 +124,10 @@ body {
 	color: var(--accent-2);
 }
 
+.toc__link--level-2 {
+	font-weight: bold;
+}
+
 .toc__link--level-3 {
 	padding-left: 18px;
 }

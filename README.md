@@ -4,6 +4,8 @@
 [How It Works](#how-it-works) ·
 [Project Structure](#project-structure) ·
 [How to Run](#how-to-run) ·
+[Basic Auth](#basic-auth) ·
+[Docker](#docker) ·
 [How to Add New Articles](#how-to-add-new-articles) ·
 [Important Rules](#important-rules) ·
 [Code and Documentation](#code-and-documentation) ·
@@ -20,6 +22,7 @@ The project consists of:
 
 - `public/index.php` — the main page and automatic menu generation from folders
 - `public/block.php` — secure delivery of HTML blocks
+- `src/Auth.php` — HTTP Basic authentication helper
 - `public/assets/js/app.js` — start init point app
 - `public/assets/js/core/App.js` — Core App script
 - `public/assets/js/modules` — modules for document loading, search, and the current document table of contents
@@ -32,6 +35,9 @@ The table of contents is synchronized with the current document: scrolling the p
 
 ```text
 docs/
+  Dockerfile
+  src/
+    Auth.php
   public/
     index.php
     block.php
@@ -67,6 +73,76 @@ Then open in your browser:
 
 [http://localhost:9999](http://localhost:9999)
 
+## Basic Auth
+
+HTTP Basic authentication is disabled by default for local development.
+
+Enable it on a server with environment variables:
+
+```bash
+DOCS_AUTH_ENABLED=1
+DOCS_AUTH_USER=admin
+DOCS_AUTH_PASSWORD=change-me
+```
+
+Both `public/index.php` and `public/block.php` require the same credentials, so direct block requests are protected too.
+
+If `DOCS_AUTH_ENABLED=1` is set without `DOCS_AUTH_USER` or `DOCS_AUTH_PASSWORD`, the app returns `500` and does not open publicly. Do not commit real passwords. Set them in your server, Docker, or cloud environment.
+
+## Docker
+
+Build the image from the project root:
+
+```bash
+docker build -t local-dev-docs .
+```
+
+Run it on a selected host port with Basic Auth enabled:
+
+```bash
+docker run -d \
+  --name local-dev-docs \
+  -p 9999:8080 \
+  -e DOCS_AUTH_ENABLED=1 \
+  -e DOCS_AUTH_USER=admin \
+  -e DOCS_AUTH_PASSWORD=change-me \
+  local-dev-docs
+```
+
+Or create a `.env` file on the server:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env`:
+
+```env
+DOCS_AUTH_ENABLED=1
+DOCS_AUTH_USER=admin
+DOCS_AUTH_PASSWORD=your-real-password
+```
+
+Run Docker with that file:
+
+```bash
+docker run -d \
+  --name local-dev-docs \
+  -p 9999:8080 \
+  --env-file .env \
+  local-dev-docs
+```
+
+Then open:
+
+```text
+http://SERVER_IP:9999
+```
+
+Change the left side of `-p 9999:8080` to expose another server port.
+
+The `.env` file is ignored by Git. Commit only `.env.example`, never the real `.env`.
+
 ## How to Add New Articles
 
 Just create a new `.html` file inside `storage/blocks`.
@@ -97,8 +173,10 @@ Update the README files if you change:
 
 - project structure
 - run commands
+- Docker build or run commands
 - JavaScript module names or responsibilities
 - PHP page loading or block delivery logic
+- authentication behavior or required environment variables
 - rules for adding documentation blocks
 - search behavior
 - table of contents behavior

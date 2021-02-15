@@ -9,6 +9,7 @@
 
 - `public/index.php` — главная страница и генерация меню из папок
 - `public/block.php` — безопасная отдача HTML-блоков
+- `src/Auth.php` — helper для HTTP Basic авторизации
 - `public/assets/js/app.js` — стартовый скрипт инициализатор
 - `public/assets/js/core/App.js` — главный скрипт приложения
 - `public/assets/js/modules` — модули приложения для загрузки документов, поиска и содержания текущей статьи
@@ -21,6 +22,9 @@
 
 ```text
 docs/
+  Dockerfile
+  src/
+    Auth.php
   public/
     index.php
     block.php
@@ -65,6 +69,76 @@ php -S localhost:9999
 
 <a href="http://localhost:9999" target="_blank">http://localhost:9999</a>
 
+## Basic авторизация
+
+HTTP Basic авторизация выключена по умолчанию для локальной разработки.
+
+На сервере её нужно включить через переменные окружения:
+
+```bash
+DOCS_AUTH_ENABLED=1
+DOCS_AUTH_USER=admin
+DOCS_AUTH_PASSWORD=change-me
+```
+
+И `public/index.php`, и `public/block.php` проверяют один и тот же логин/пароль, поэтому прямые запросы к HTML-блокам тоже защищены.
+
+Если задать `DOCS_AUTH_ENABLED=1`, но не задать `DOCS_AUTH_USER` или `DOCS_AUTH_PASSWORD`, приложение вернёт `500` и не откроется публично. Настоящие пароли нельзя коммитить. Их нужно задавать на сервере, в Docker или в настройках облачного сервиса.
+
+## Docker
+
+Собрать образ из корня проекта:
+
+```bash
+docker build -t local-dev-docs .
+```
+
+Запустить на нужном порту сервера с Basic авторизацией:
+
+```bash
+docker run -d \
+  --name local-dev-docs \
+  -p 9999:8080 \
+  -e DOCS_AUTH_ENABLED=1 \
+  -e DOCS_AUTH_USER=admin \
+  -e DOCS_AUTH_PASSWORD=change-me \
+  local-dev-docs
+```
+
+Или создать `.env` файл на сервере:
+
+```bash
+cp .env.example .env
+```
+
+Потом отредактировать `.env`:
+
+```env
+DOCS_AUTH_ENABLED=1
+DOCS_AUTH_USER=admin
+DOCS_AUTH_PASSWORD=your-real-password
+```
+
+Запустить Docker с этим файлом:
+
+```bash
+docker run -d \
+  --name local-dev-docs \
+  -p 9999:8080 \
+  --env-file .env \
+  local-dev-docs
+```
+
+После этого открыть:
+
+```text
+http://SERVER_IP:9999
+```
+
+Чтобы выбрать другой порт сервера, поменяй левую часть `-p 9999:8080`.
+
+Файл `.env` игнорируется Git. Коммитить нужно только `.env.example`, настоящий `.env` с паролем не коммитится.
+
 ## Как добавлять новые статьи
 
 Просто создать новый `.html` файл внутри `storage/blocks`.
@@ -95,8 +169,10 @@ README нужно обновлять, если меняются:
 
 - структура проекта
 - команды запуска
+- команды сборки или запуска Docker
 - названия или ответственность JavaScript-модулей
 - логика загрузки страниц или отдачи блоков в PHP
+- поведение авторизации или обязательные переменные окружения
 - правила добавления HTML-документов
 - поведение поиска
 - поведение содержания

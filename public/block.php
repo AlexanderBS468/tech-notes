@@ -1,5 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+require_once __DIR__ . '/../src/Auth.php';
+
+docsRequireBasicAuth();
+
 $baseDir = realpath(__DIR__ . '/../storage/blocks');
 $relativePath = $_GET['file'] ?? '';
 

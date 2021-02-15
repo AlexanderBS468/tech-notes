@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../src/Auth.php';
+
+docsRequireBasicAuth();
+
 function formatTitle(string $name): string
 {
 	$name = pathinfo($name, PATHINFO_FILENAME);
@@ -136,7 +140,7 @@ $searchIndex = $baseDir ? buildSearchIndex($tree, $baseDir) : [];
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Local Dev Docs</title>
-	<link rel="stylesheet" href="assets/css/app.css">
+	<link rel="stylesheet" href="assets/css/app.min.css">
 </head>
 <body>
 <div class="layout">
