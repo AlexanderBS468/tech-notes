@@ -36,7 +36,6 @@ function docsBasicAuthEnabled(): bool
 {
 	$value = getenv('DOCS_AUTH_ENABLED');
 
-	var_dump($value);
 	if (!is_string($value)) {
 		return false;
 	}
