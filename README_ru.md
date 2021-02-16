@@ -87,25 +87,7 @@ DOCS_AUTH_PASSWORD=change-me
 
 ## Docker
 
-Собрать образ из корня проекта:
-
-```bash
-docker build -t local-dev-docs .
-```
-
-Запустить на нужном порту сервера с Basic авторизацией:
-
-```bash
-docker run -d \
-  --name local-dev-docs \
-  -p 9999:8080 \
-  -e DOCS_AUTH_ENABLED=1 \
-  -e DOCS_AUTH_USER=admin \
-  -e DOCS_AUTH_PASSWORD=change-me \
-  local-dev-docs
-```
-
-Или создать `.env` файл на сервере:
+Создать `.env` файл на сервере:
 
 ```bash
 cp .env.example .env
@@ -114,19 +96,16 @@ cp .env.example .env
 Потом отредактировать `.env`:
 
 ```env
+DOCS_HOST_PORT=9999
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
 DOCS_AUTH_PASSWORD=your-real-password
 ```
 
-Запустить Docker с этим файлом:
+Запустить контейнер с примонтированными файлами проекта:
 
 ```bash
-docker run -d \
-  --name local-dev-docs \
-  -p 9999:8080 \
-  --env-file .env \
-  local-dev-docs
+docker-compose up -d --build
 ```
 
 После этого открыть:
@@ -135,7 +114,31 @@ docker run -d \
 http://SERVER_IP:9999
 ```
 
-Чтобы выбрать другой порт сервера, поменяй левую часть `-p 9999:8080`.
+`DOCS_HOST_PORT` управляет портом сервера. Например, `DOCS_HOST_PORT=18080` откроет `http://SERVER_IP:18080`.
+
+Внутри Docker контейнер слушает порт `9999`. На сервер наружу открывается только порт из `DOCS_HOST_PORT`.
+
+В compose не задан фиксированный `container_name`, поэтому Docker Compose сам создаёт имя контейнера с префиксом проекта и не конфликтует с другими контейнерами по имени. Обычно конфликтовать может только внешний порт; если `9999` уже занят, поменяй `DOCS_HOST_PORT`.
+
+В compose примонтированы эти папки:
+
+```text
+./public  -> /app/public
+./src     -> /app/src
+./storage -> /app/storage
+```
+
+Значит можно править документы в `storage/blocks`, PHP-код, CSS и JavaScript прямо на сервере без пересборки образа. Если поменял `.env`, пересоздай контейнер:
+
+```bash
+docker-compose up -d
+```
+
+Остановить контейнер:
+
+```bash
+docker-compose down
+```
 
 Файл `.env` игнорируется Git. Коммитить нужно только `.env.example`, настоящий `.env` с паролем не коммитится.
 

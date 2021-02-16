@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  docs:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${DOCS_HOST_PORT:-9999}:9999"
+    env_file:
+      - .env
+    volumes:
+      - ./public:/app/public
+      - ./src:/app/src
+      - ./storage:/app/storage

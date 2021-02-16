@@ -6,6 +6,6 @@ COPY public ./public
 COPY src ./src
 COPY storage ./storage
 
-EXPOSE 8080
+EXPOSE 9999
 
-CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
+CMD ["php", "-S", "0.0.0.0:9999", "-t", "public"]

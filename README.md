@@ -91,25 +91,7 @@ If `DOCS_AUTH_ENABLED=1` is set without `DOCS_AUTH_USER` or `DOCS_AUTH_PASSWORD`
 
 ## Docker
 
-Build the image from the project root:
-
-```bash
-docker build -t local-dev-docs .
-```
-
-Run it on a selected host port with Basic Auth enabled:
-
-```bash
-docker run -d \
-  --name local-dev-docs \
-  -p 9999:8080 \
-  -e DOCS_AUTH_ENABLED=1 \
-  -e DOCS_AUTH_USER=admin \
-  -e DOCS_AUTH_PASSWORD=change-me \
-  local-dev-docs
-```
-
-Or create a `.env` file on the server:
+Create a `.env` file on the server:
 
 ```bash
 cp .env.example .env
@@ -118,19 +100,16 @@ cp .env.example .env
 Then edit `.env`:
 
 ```env
+DOCS_HOST_PORT=9999
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
 DOCS_AUTH_PASSWORD=your-real-password
 ```
 
-Run Docker with that file:
+Start the container with editable project files mounted into it:
 
 ```bash
-docker run -d \
-  --name local-dev-docs \
-  -p 9999:8080 \
-  --env-file .env \
-  local-dev-docs
+docker-compose up -d --build
 ```
 
 Then open:
@@ -139,7 +118,31 @@ Then open:
 http://SERVER_IP:9999
 ```
 
-Change the left side of `-p 9999:8080` to expose another server port.
+`DOCS_HOST_PORT` controls the server port. For example, `DOCS_HOST_PORT=18080` opens `http://SERVER_IP:18080`.
+
+The container listens on port `9999` inside Docker. Only the host port from `DOCS_HOST_PORT` is exposed on the server.
+
+The compose file does not set a fixed `container_name`, so Docker Compose creates a project-scoped container name and avoids name conflicts with other containers. The common conflict is the host port; change `DOCS_HOST_PORT` if port `9999` is already used.
+
+The compose file mounts these folders into the container:
+
+```text
+./public  -> /app/public
+./src     -> /app/src
+./storage -> /app/storage
+```
+
+That means you can edit docs in `storage/blocks`, PHP code, CSS, and JavaScript on the server without rebuilding the image. If you change `.env`, recreate the container:
+
+```bash
+docker-compose up -d
+```
+
+Stop the container:
+
+```bash
+docker-compose down
+```
 
 The `.env` file is ignored by Git. Commit only `.env.example`, never the real `.env`.
 
