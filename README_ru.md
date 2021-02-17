@@ -9,7 +9,7 @@
 
 - `public/index.php` — главная страница и генерация меню из папок
 - `public/block.php` — безопасная отдача HTML-блоков
-- `src/Auth.php` — helper для HTTP Basic авторизации
+- `src/Auth.php` — helper для Basic Auth и входа через сессию
 - `public/assets/js/app.js` — стартовый скрипт инициализатор
 - `public/assets/js/core/App.js` — главный скрипт приложения
 - `public/assets/js/modules` — модули приложения для загрузки документов, поиска и содержания текущей статьи
@@ -74,21 +74,39 @@ php -S localhost:9999
 
 <a href="http://localhost:9999" target="_blank">http://localhost:9999</a>
 
-## Basic авторизация
+## Авторизация
 
-HTTP Basic авторизация выключена по умолчанию для локальной разработки.
+Авторизация выключена по умолчанию для локальной разработки.
 
-На сервере её нужно включить через переменные окружения:
+На сервере можно включить HTTP Basic авторизацию. Пароль в `.env` хранится не открытым текстом, а bcrypt-хэшем.
+
+Сначала сгенерируй хэш:
+
+```bash
+php tools/hash-password.php
+```
+
+Скрипт попросит пароль два раза и выведет хэш. Его нужно записать в `.env`:
+
+Можно прочитать пароль из стандартного потока:
+
+```bash
+php tools/hash-password.php --stdin < password.txt
+```
+
+Файл с паролем нельзя коммитить. Для ручного использования безопаснее запуск без параметров, чтобы пароль не попал в историю терминала.
 
 ```bash
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
-DOCS_AUTH_PASSWORD=change-me
+DOCS_AUTH_PASSWORD_HASH=$2y$10$...
 ```
 
-И `public/index.php`, и `public/block.php` проверяют один и тот же логин/пароль, поэтому прямые запросы к HTML-блокам тоже защищены.
+И `public/index.php`, и `public/block.php` проверяют авторизацию. Поэтому прямые запросы к HTML-блокам тоже защищены.
 
-Если задать `DOCS_AUTH_ENABLED=1`, но не задать `DOCS_AUTH_USER` или `DOCS_AUTH_PASSWORD`, приложение вернёт `500` и не откроется публично. Настоящие пароли нельзя коммитить. Их нужно задавать на сервере, в Docker или в настройках облачного сервиса.
+Если задать `DOCS_AUTH_ENABLED=1`, но не задать `DOCS_AUTH_USER` и пароль через `DOCS_AUTH_PASSWORD_HASH`, приложение вернёт `500` и не откроется публично.
+
+Basic Auth передаёт пароль в заголовке запроса, поэтому для публичного сервера нужен HTTPS. Хэш в `.env` защищает от хранения открытого пароля на сервере, но не заменяет HTTPS.
 
 ## Docker
 
@@ -104,7 +122,7 @@ cp .env.example .env
 DOCS_HOST_PORT=9999
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
-DOCS_AUTH_PASSWORD=your-real-password
+DOCS_AUTH_PASSWORD_HASH=$2y$10$your-generated-password-hash
 ```
 
 Запустить контейнер с примонтированными файлами проекта:

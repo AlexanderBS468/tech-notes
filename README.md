@@ -4,7 +4,7 @@
 [How It Works](#how-it-works) ·
 [Project Structure](#project-structure) ·
 [How to Run](#how-to-run) ·
-[Basic Auth](#basic-auth) ·
+[Authentication](#authentication) ·
 [Docker](#docker) ·
 [How to Add New Articles](#how-to-add-new-articles) ·
 [Important Rules](#important-rules) ·
@@ -22,7 +22,7 @@ The project consists of:
 
 - `public/index.php` — the main page and automatic menu generation from folders
 - `public/block.php` — secure delivery of HTML blocks
-- `src/Auth.php` — HTTP Basic authentication helper
+- `src/Auth.php` — authentication helper for Basic Auth and session login
 - `public/assets/js/app.js` — start init point app
 - `public/assets/js/core/App.js` — Core App script
 - `public/assets/js/modules` — modules for document loading, search, and the current document table of contents
@@ -77,21 +77,39 @@ Then open in your browser:
 
 [http://localhost:9999](http://localhost:9999)
 
-## Basic Auth
+## Authentication
 
-HTTP Basic authentication is disabled by default for local development.
+Authentication is disabled by default for local development.
 
-Enable it on a server with environment variables:
+Enable HTTP Basic authentication on a server. The password is stored in `.env` as a bcrypt hash, not as plain text.
+
+First generate the hash:
+
+```bash
+php tools/hash-password.php
+```
+
+The script asks for the password twice and prints a hash. Put that hash into `.env`:
+
+You can also read the password from standard input:
+
+```bash
+php tools/hash-password.php --stdin < password.txt
+```
+
+Do not commit the password file. For manual use, the interactive command without arguments is safer because the password does not end up in shell history.
 
 ```bash
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
-DOCS_AUTH_PASSWORD=change-me
+DOCS_AUTH_PASSWORD_HASH=$2y$10$...
 ```
 
-Both `public/index.php` and `public/block.php` require the same credentials, so direct block requests are protected too.
+Both `public/index.php` and `public/block.php` require authentication, so direct block requests are protected too.
 
-If `DOCS_AUTH_ENABLED=1` is set without `DOCS_AUTH_USER` or `DOCS_AUTH_PASSWORD`, the app returns `500` and does not open publicly. Do not commit real passwords. Set them in your server, Docker, or cloud environment.
+If `DOCS_AUTH_ENABLED=1` is set without `DOCS_AUTH_USER` and a password via `DOCS_AUTH_PASSWORD_HASH`, the app returns `500` and does not open publicly.
+
+Basic Auth sends the password in the request header, so a public server should use HTTPS. The hash in `.env` avoids storing the plain password on the server, but it does not replace HTTPS.
 
 ## Docker
 
@@ -107,7 +125,7 @@ Then edit `.env`:
 DOCS_HOST_PORT=9999
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
-DOCS_AUTH_PASSWORD=your-real-password
+DOCS_AUTH_PASSWORD_HASH=$2y$10$your-generated-password-hash
 ```
 
 Start the container with editable project files mounted into it:

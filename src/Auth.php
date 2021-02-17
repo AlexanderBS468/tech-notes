@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/PasswordHash.php';
+
 function docsRequireBasicAuth(): void
 {
-	if (!docsBasicAuthEnabled()) {
+	if (!docsAuthEnabled()) {
 		return;
 	}
 
 	$expectedUser = getenv('DOCS_AUTH_USER');
-	$expectedPassword = getenv('DOCS_AUTH_PASSWORD');
+	$passwordHash = getenv('DOCS_AUTH_PASSWORD_HASH');
 
-	if (!is_string($expectedUser) || $expectedUser === '' || !is_string($expectedPassword) || $expectedPassword === '') {
-		http_response_code(500);
-		header('Content-Type: text/plain; charset=UTF-8');
-		exit('Basic auth is not configured');
+	if (!is_string($expectedUser) || $expectedUser === '' || !is_string($passwordHash) || $passwordHash === '') {
+		docsAuthConfigurationError();
 	}
 
 	[$user, $password] = docsReadBasicAuthCredentials();
@@ -23,7 +23,7 @@ function docsRequireBasicAuth(): void
 		!is_string($user)
 		|| !is_string($password)
 		|| !hash_equals($expectedUser, $user)
-		|| !hash_equals($expectedPassword, $password)
+		|| !docsPasswordHashMatches($password, $passwordHash)
 	) {
 		header('WWW-Authenticate: Basic realm="Local Dev Docs", charset="UTF-8"');
 		http_response_code(401);
@@ -32,7 +32,7 @@ function docsRequireBasicAuth(): void
 	}
 }
 
-function docsBasicAuthEnabled(): bool
+function docsAuthEnabled(): bool
 {
 	$value = getenv('DOCS_AUTH_ENABLED');
 
@@ -62,4 +62,11 @@ function docsReadBasicAuthCredentials(): array
 	}
 
 	return explode(':', $decoded, 2);
+}
+
+function docsAuthConfigurationError(): void
+{
+	http_response_code(500);
+	header('Content-Type: text/plain; charset=UTF-8');
+	exit('Auth is not configured');
 }
