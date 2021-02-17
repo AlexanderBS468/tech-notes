@@ -29,6 +29,8 @@ The project consists of:
 - `public/assets/css/app.css` — styles
 - `storage/blocks/` — the actual documentation files stored as separate `.html` files
 
+The menu uses natural sorting: `Unit 2` appears before `Unit 10`, not the other way around.
+
 The table of contents is synchronized with the current document: scrolling the page moves the table of contents, and scrolling the table of contents moves the page by the same scroll progress.
 
 On small screens, the left menu and the right table of contents are hidden in separate panels. The mobile top bar opens the document menu or the current article table of contents, and the panel closes after selecting an item.

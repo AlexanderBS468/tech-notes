@@ -62,7 +62,7 @@ function scanBlocks(string $dir, string $baseDir): array
 			return $a['type'] === 'dir' ? -1 : 1;
 		}
 
-		return strcmp($a['title'], $b['title']);
+		return strnatcasecmp($a['title'], $b['title']);
 	});
 
 	return $items;
