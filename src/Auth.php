@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @todo need add token auth
+ */
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/PasswordHash.php';

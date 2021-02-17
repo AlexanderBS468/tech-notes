@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-const ALGO_CRYPT = PASSWORD_BCRYPT;
-
 function docsHashPassword(string $password): string
 {
-	return password_hash($password, ALGO_CRYPT);
+	return password_hash($password, PASSWORD_BCRYPT);
 }
 
 function docsPasswordHashMatches(string $password, string $hash): bool

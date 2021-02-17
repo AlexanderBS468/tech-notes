@@ -96,10 +96,18 @@ php tools/hash-password.php --stdin < password.txt
 
 Файл с паролем нельзя коммитить. Для ручного использования безопаснее запуск без параметров, чтобы пароль не попал в историю терминала.
 
+Проверить пару пароль-хэш можно так:
+
+```bash
+php tools/verify-password.php
+```
+
+Скрипт попросит пароль и хэш, потом покажет `MATCH` или `NO MATCH`.
+
 ```bash
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
-DOCS_AUTH_PASSWORD_HASH=$2y$10$...
+DOCS_AUTH_PASSWORD_HASH='$2y$10$...'
 ```
 
 И `public/index.php`, и `public/block.php` проверяют авторизацию. Поэтому прямые запросы к HTML-блокам тоже защищены.
@@ -107,6 +115,15 @@ DOCS_AUTH_PASSWORD_HASH=$2y$10$...
 Если задать `DOCS_AUTH_ENABLED=1`, но не задать `DOCS_AUTH_USER` и пароль через `DOCS_AUTH_PASSWORD_HASH`, приложение вернёт `500` и не откроется публично.
 
 Basic Auth передаёт пароль в заголовке запроса, поэтому для публичного сервера нужен HTTPS. Хэш в `.env` защищает от хранения открытого пароля на сервере, но не заменяет HTTPS.
+
+Важные нюансы:
+
+- bcrypt-хэш содержит символы `$`, поэтому в `.env` его лучше писать в одинарных кавычках
+- если хэш попал в контейнер без кавычек, часть строки может потеряться, и `password_get_info()` покажет `unknown`
+- после изменения `.env` контейнер нужно пересоздать, обычный restart может не перечитать переменные окружения
+- Basic Auth запоминается браузером для текущего адреса; для чистой проверки используй инкогнито, другой порт или `curl -u user:password`
+- `password_hash()` каждый раз создаёт новый хэш даже для одного пароля, это нормально
+- при генерации хэша используй `PASSWORD_BCRYPT` напрямую, без своей переопределённой константы
 
 ## Docker
 
@@ -122,7 +139,7 @@ cp .env.example .env
 DOCS_HOST_PORT=9999
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
-DOCS_AUTH_PASSWORD_HASH=$2y$10$your-generated-password-hash
+DOCS_AUTH_PASSWORD_HASH='$2y$10$your-generated-password-hash'
 ```
 
 Запустить контейнер с примонтированными файлами проекта:

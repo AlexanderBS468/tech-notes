@@ -99,10 +99,18 @@ php tools/hash-password.php --stdin < password.txt
 
 Do not commit the password file. For manual use, the interactive command without arguments is safer because the password does not end up in shell history.
 
+Verify a password/hash pair with:
+
+```bash
+php tools/verify-password.php
+```
+
+The script asks for the password and hash, then prints `MATCH` or `NO MATCH`.
+
 ```bash
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
-DOCS_AUTH_PASSWORD_HASH=$2y$10$...
+DOCS_AUTH_PASSWORD_HASH='$2y$10$...'
 ```
 
 Both `public/index.php` and `public/block.php` require authentication, so direct block requests are protected too.
@@ -110,6 +118,15 @@ Both `public/index.php` and `public/block.php` require authentication, so direct
 If `DOCS_AUTH_ENABLED=1` is set without `DOCS_AUTH_USER` and a password via `DOCS_AUTH_PASSWORD_HASH`, the app returns `500` and does not open publicly.
 
 Basic Auth sends the password in the request header, so a public server should use HTTPS. The hash in `.env` avoids storing the plain password on the server, but it does not replace HTTPS.
+
+Important notes:
+
+- bcrypt hashes contain `$`, so wrap the hash in single quotes in `.env`
+- if the hash reaches the container without proper quoting, part of it may be lost and `password_get_info()` will show `unknown`
+- after changing `.env`, recreate the container; a simple restart may not reload environment variables
+- browsers cache Basic Auth for the current address; use an incognito window, another port, or `curl -u user:password` for a clean test
+- `password_hash()` creates a different hash every time for the same password; this is expected
+- generate hashes with `PASSWORD_BCRYPT` directly, without a custom redefined constant
 
 ## Docker
 
@@ -125,7 +142,7 @@ Then edit `.env`:
 DOCS_HOST_PORT=9999
 DOCS_AUTH_ENABLED=1
 DOCS_AUTH_USER=admin
-DOCS_AUTH_PASSWORD_HASH=$2y$10$your-generated-password-hash
+DOCS_AUTH_PASSWORD_HASH='$2y$10$your-generated-password-hash'
 ```
 
 Start the container with editable project files mounted into it:
