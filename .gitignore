@@ -10,6 +10,7 @@
 ssls/
 .env
 tmp
+password.txt
 
 public/.well-known/
 /storage
