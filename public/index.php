@@ -143,8 +143,17 @@ $searchIndex = $baseDir ? buildSearchIndex($tree, $baseDir) : [];
 	<link rel="stylesheet" href="assets/css/app.min.css">
 </head>
 <body>
+<div class="mobile-toolbar" aria-label="Навигация по документации">
+	<button type="button" class="mobile-toolbar__button" data-panel-target="menu" aria-controls="docs-sidebar" aria-expanded="false">
+		Меню
+	</button>
+	<button type="button" class="mobile-toolbar__button" data-panel-target="toc" aria-controls="docs-toc-sidebar" aria-expanded="false">
+		Содержание
+	</button>
+</div>
+<button type="button" class="mobile-panel-backdrop" aria-label="Закрыть панель"></button>
 <div class="layout">
-	<aside class="sidebar">
+	<aside id="docs-sidebar" class="sidebar" data-mobile-panel="menu">
 		<h1>Dev Docs</h1>
 		<input type="text" id="search" class="search" placeholder="Поиск...">
 		<div id="search-results" class="search-results" aria-live="polite"></div>
@@ -163,7 +172,7 @@ $searchIndex = $baseDir ? buildSearchIndex($tree, $baseDir) : [];
 		</div>
 	</main>
 
-	<aside class="toc-sidebar">
+	<aside id="docs-toc-sidebar" class="toc-sidebar" data-mobile-panel="toc">
 		<div class="toc">
 			<div class="toc__title">Содержание</div>
 			<div id="table-of-contents" class="toc__body">

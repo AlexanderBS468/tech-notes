@@ -9,6 +9,8 @@ export class App {
 		this.searchInput = document.querySelector(config.searchInputSelector);
 		this.searchResults = document.querySelector(config.searchResultsSelector);
 		this.tableOfContentsElement = document.querySelector(config.tableOfContentsSelector);
+		this.mobilePanelButtons = Array.from(document.querySelectorAll('[data-panel-target]'));
+		this.mobilePanelBackdrop = document.querySelector('.mobile-panel-backdrop');
 
 		this.tableOfContents = new TableOfContents({
 			contentElement: this.contentElement,
@@ -26,12 +28,16 @@ export class App {
 			inputElement: this.searchInput,
 			resultsElement: this.searchResults,
 			docsIndex: config.docsIndex,
-			onOpen: (path) => this.docLoader.load(path),
+			onOpen: (path) => {
+				this.closeMobilePanels();
+				this.docLoader.load(path);
+			},
 		});
 	}
 
 	init() {
 		this.bindMenu();
+		this.bindMobilePanels();
 		this.search.init();
 		this.tableOfContents.init();
 		this.openFirstDocument();
@@ -53,6 +59,58 @@ export class App {
 			}
 
 			this.docLoader.load(path);
+			this.closeMobilePanels();
+		});
+	}
+
+	bindMobilePanels() {
+		this.mobilePanelButtons.forEach(button => {
+			button.addEventListener('click', () => {
+				this.toggleMobilePanel(button.dataset.panelTarget);
+			});
+		});
+
+		if (this.mobilePanelBackdrop) {
+			this.mobilePanelBackdrop.addEventListener('click', () => this.closeMobilePanels());
+		}
+
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') {
+				this.closeMobilePanels();
+			}
+		});
+
+		document.addEventListener('click', (event) => {
+			if (event.target.closest('.toc__link')) {
+				this.closeMobilePanels();
+			}
+		});
+	}
+
+	toggleMobilePanel(name) {
+		const isOpen = document.body.dataset.mobilePanel === name;
+
+		if (isOpen) {
+			this.closeMobilePanels();
+			return;
+		}
+
+		document.body.dataset.mobilePanel = name;
+		document.body.classList.add('mobile-panel-is-open');
+		this.updateMobilePanelButtons(name);
+	}
+
+	closeMobilePanels() {
+		delete document.body.dataset.mobilePanel;
+		document.body.classList.remove('mobile-panel-is-open');
+		this.updateMobilePanelButtons('');
+	}
+
+	updateMobilePanelButtons(activeName) {
+		this.mobilePanelButtons.forEach(button => {
+			const isActive = button.dataset.panelTarget === activeName;
+			button.classList.toggle('active', isActive);
+			button.setAttribute('aria-expanded', isActive ? 'true' : 'false');
 		});
 	}
 

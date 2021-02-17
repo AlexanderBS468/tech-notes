@@ -31,6 +31,8 @@ The project consists of:
 
 The table of contents is synchronized with the current document: scrolling the page moves the table of contents, and scrolling the table of contents moves the page by the same scroll progress.
 
+On small screens, the left menu and the right table of contents are hidden in separate panels. The mobile top bar opens the document menu or the current article table of contents, and the panel closes after selecting an item.
+
 ## Project Structure
 
 ```text
