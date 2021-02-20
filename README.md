@@ -29,6 +29,8 @@ The project consists of:
 - `public/assets/css/app.css` — styles
 - `storage/blocks/` — the actual documentation files stored as separate `.html` files
 
+Groups in the left menu work as an accordion: sections can be collapsed and expanded, and the state is saved in the browser.
+
 The menu uses natural sorting: `Unit 2` appears before `Unit 10`, not the other way around.
 
 The table of contents is synchronized with the current document: scrolling the page moves the table of contents, and scrolling the table of contents moves the page by the same scroll progress.

@@ -33,9 +33,13 @@ function scanBlocks(string $dir, string $baseDir): array
 			$children = scanBlocks($fullPath, $baseDir);
 
 			if ($children !== []) {
+				$relativeDir = ltrim(str_replace($baseDir, '', $fullPath), DIRECTORY_SEPARATOR);
+				$relativeDir = str_replace(DIRECTORY_SEPARATOR, '/', $relativeDir);
+
 				$items[] = [
 					'type' => 'dir',
 					'title' => formatTitle($file),
+					'path' => $relativeDir,
 					'children' => $children,
 				];
 			}
@@ -74,8 +78,14 @@ function renderMenu(array $items): string
 
 	foreach ($items as $item) {
 		if ($item['type'] === 'dir') {
+			$title = htmlspecialchars($item['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+			$path = htmlspecialchars($item['path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
 			$html .= '<li class="doc-menu-group">';
-			$html .= '<div class="doc-menu-group-title">' . htmlspecialchars($item['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</div>';
+			$html .= '<button type="button" class="doc-menu-group-title js-menu-group-toggle" data-group-path="' . $path . '" aria-expanded="true">';
+			$html .= '<span class="doc-menu-group-title__icon" aria-hidden="true"></span>';
+			$html .= '<span class="doc-menu-group-title__text">' . $title . '</span>';
+			$html .= '</button>';
 			$html .= renderMenu($item['children']);
 			$html .= '</li>';
 			continue;

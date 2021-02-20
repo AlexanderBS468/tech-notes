@@ -11,6 +11,8 @@ export class App {
 		this.tableOfContentsElement = document.querySelector(config.tableOfContentsSelector);
 		this.mobilePanelButtons = Array.from(document.querySelectorAll('[data-panel-target]'));
 		this.mobilePanelBackdrop = document.querySelector('.mobile-panel-backdrop');
+		this.menuStorageKey = 'docsCollapsedMenuGroups';
+		this.collapsedMenuGroups = this.readCollapsedMenuGroups();
 
 		this.tableOfContents = new TableOfContents({
 			contentElement: this.contentElement,
@@ -20,7 +22,10 @@ export class App {
 		this.docLoader = new DocLoader({
 			contentElement: this.contentElement,
 			menuLinkSelector: config.menuLinkSelector,
-			onLoad: () => this.tableOfContents.build(),
+			onLoad: (path) => {
+				this.tableOfContents.build();
+				this.expandMenuPath(path);
+			},
 			onError: () => this.tableOfContents.clear('Нет содержания'),
 		});
 
@@ -38,6 +43,7 @@ export class App {
 	init() {
 		this.bindMenu();
 		this.bindMobilePanels();
+		this.applyMenuGroupState();
 		this.search.init();
 		this.tableOfContents.init();
 		this.openFirstDocument();
@@ -45,6 +51,14 @@ export class App {
 
 	bindMenu() {
 		document.addEventListener('click', (event) => {
+			const groupToggle = event.target.closest('.js-menu-group-toggle');
+
+			if (groupToggle) {
+				event.preventDefault();
+				this.toggleMenuGroup(groupToggle);
+				return;
+			}
+
 			const link = event.target.closest(this.config.menuLinkSelector);
 
 			if (!link) {
@@ -61,6 +75,89 @@ export class App {
 			this.docLoader.load(path);
 			this.closeMobilePanels();
 		});
+	}
+
+	applyMenuGroupState() {
+		document.querySelectorAll('.js-menu-group-toggle').forEach(toggle => {
+			this.setMenuGroupCollapsed(toggle, this.collapsedMenuGroups.has(toggle.dataset.groupPath));
+		});
+	}
+
+	toggleMenuGroup(toggle) {
+		const groupPath = toggle.dataset.groupPath;
+
+		if (!groupPath) {
+			return;
+		}
+
+		const isCollapsed = !this.collapsedMenuGroups.has(groupPath);
+
+		if (isCollapsed) {
+			this.collapsedMenuGroups.add(groupPath);
+		} else {
+			this.collapsedMenuGroups.delete(groupPath);
+		}
+
+		this.setMenuGroupCollapsed(toggle, isCollapsed);
+		this.saveCollapsedMenuGroups();
+	}
+
+	setMenuGroupCollapsed(toggle, isCollapsed) {
+		const group = toggle.closest('.doc-menu-group');
+
+		if (!group) {
+			return;
+		}
+
+		group.classList.toggle('is-collapsed', isCollapsed);
+		toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+	}
+
+	expandMenuPath(path) {
+		if (!path) {
+			return;
+		}
+
+		const parts = path.split('/');
+		parts.pop();
+
+		let changed = false;
+
+		parts.reduce((currentPath, part) => {
+			const groupPath = currentPath ? `${currentPath}/${part}` : part;
+			const toggle = document.querySelector(`.js-menu-group-toggle[data-group-path="${CSS.escape(groupPath)}"]`);
+
+			if (toggle) {
+				this.collapsedMenuGroups.delete(groupPath);
+				this.setMenuGroupCollapsed(toggle, false);
+				changed = true;
+			}
+
+			return groupPath;
+		}, '');
+
+		if (changed) {
+			this.saveCollapsedMenuGroups();
+		}
+	}
+
+	readCollapsedMenuGroups() {
+		try {
+			const storedValue = window.localStorage.getItem(this.menuStorageKey);
+			const groups = JSON.parse(storedValue || '[]');
+
+			return new Set(Array.isArray(groups) ? groups : []);
+		} catch (error) {
+			return new Set();
+		}
+	}
+
+	saveCollapsedMenuGroups() {
+		try {
+			window.localStorage.setItem(this.menuStorageKey, JSON.stringify(Array.from(this.collapsedMenuGroups)));
+		} catch (error) {
+			// Menu state persistence is optional; the accordion still works without it.
+		}
 	}
 
 	bindMobilePanels() {

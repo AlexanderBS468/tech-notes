@@ -256,9 +256,77 @@ nav a.active {
 	font-weight: bold;
 }
 
+.doc-menu {
+	list-style: none;
+	margin: 0;
+	padding-left: 14px;
+}
+
+nav > .doc-menu {
+	padding-left: 0;
+}
+
+.doc-menu-group,
+.doc-menu-item {
+	margin: 0;
+}
+
+.doc-menu-group + .doc-menu-group,
+.doc-menu-item + .doc-menu-item {
+	margin-top: 4px;
+}
+
+.doc-menu-group-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 8px 0;
+	border: 0;
+	background: transparent;
+	color: var(--text-soft);
+	font: inherit;
+	font-size: 15px;
+	line-height: 1.35;
+	text-align: left;
+	cursor: pointer;
+}
+
+.doc-menu-group-title:hover {
+	color: var(--text);
+}
+
+.doc-menu-group-title__icon {
+	position: relative;
+	width: 10px;
+	height: 10px;
+	flex: 0 0 10px;
+}
+
+.doc-menu-group-title__icon::before {
+	content: "";
+	position: absolute;
+	top: 1px;
+	left: 2px;
+	width: 6px;
+	height: 6px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(45deg);
+	transition: transform 0.16s ease;
+}
+
+.doc-menu-group.is-collapsed > .doc-menu-group-title .doc-menu-group-title__icon::before {
+	transform: rotate(-45deg);
+}
+
+.doc-menu-group.is-collapsed > .doc-menu {
+	display: none;
+}
+
 main {
 	padding: 36px;
-	max-width: 1180px;
+	/*max-width: 1180px;*/
 	width: 100%;
 }
 
